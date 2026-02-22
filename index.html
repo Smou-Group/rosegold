@@ -1,92 +1,248 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
-<title>كشف العائلة</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>الكبائن الروزجولد | Rosegold Cabin — SMOU GROUP</title>
 
 <style>
+:root{
+  --rose:#b76e79;
+  --rose2:#8d4f59;
+  --bg:#fdf7f8;
+  --card:#ffffff;
+  --shadow:0 10px 30px rgba(0,0,0,.15);
+}
+
+*{box-sizing:border-box}
 body{
-  font-family: Tahoma, Arial;
-  background:#f7f7f7;
-  padding:20px;
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
 }
-h2{margin-bottom:10px}
-input{
-  padding:10px;
-  width:300px;
-  font-size:16px;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:15px;
-  background:#fff;
-}
-th,td{
-  border:1px solid #ccc;
-  padding:10px;
-  text-align:right;
-}
-th{
-  background:#0f5c6e;
+
+/* ===== HERO ===== */
+.hero{
+  min-height:55vh;
+  padding:40px 0;
   color:#fff;
+  position:relative;
+  background:
+    url("back.webp") center/cover no-repeat,
+    url("back.jpg") center/cover no-repeat,
+    url("back.png") center/cover no-repeat,
+    linear-gradient(180deg,var(--rose2),var(--rose));
 }
-tr:nth-child(even){background:#f2f2f2}
-.note{color:#666;margin-top:8px}
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,.6));
+}
+.container{
+  position:relative;
+  max-width:1300px;
+  margin:auto;
+  padding:0 20px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:15px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo{
+  width:50px;height:50px;
+  border-radius:12px;
+  background:rgba(255,255,255,.15);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.logo img{
+  width:80%;
+  height:80%;
+  object-fit:contain;
+}
+
+.titleBox h1{
+  margin:0;
+  font-size:20px;
+}
+.titleBox span{
+  font-size:12px;
+  opacity:.9;
+}
+
+.heroText{
+  margin-top:90px;
+}
+.heroText h2{
+  margin:0;
+  font-size:28px;
+}
+.heroText p{
+  margin-top:10px;
+  opacity:.9;
+}
+
+/* ===== Gallery ===== */
+main{
+  max-width:1300px;
+  margin:40px auto;
+  padding:0 20px;
+}
+
+.track{
+  display:flex;
+  gap:20px;
+  overflow:auto;
+  scroll-snap-type:x mandatory;
+  padding-bottom:10px;
+}
+
+.card{
+  min-width:250px;
+  background:var(--card);
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  scroll-snap-align:start;
+  cursor:pointer;
+  transition:.25s;
+}
+.card:hover{
+  transform:translateY(-6px);
+}
+
+.thumb{
+  aspect-ratio:3/4;
+  overflow:hidden;
+}
+.thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.meta{
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.meta b{
+  color:var(--rose2);
+}
+
+.open{
+  text-decoration:none;
+  background:var(--rose);
+  color:#fff;
+  padding:8px 14px;
+  border-radius:10px;
+  font-size:13px;
+}
+.open:hover{
+  background:var(--rose2);
+}
+
+footer{
+  text-align:center;
+  padding:20px;
+  font-size:12px;
+  color:#666;
+}
+
+@media(max-width:600px){
+  .card{min-width:210px}
+}
 </style>
 </head>
 
 <body>
 
-<h2>🔎 البحث باسم العائلة</h2>
+<section class="hero">
+<div class="container">
 
-<input id="search" placeholder="اكتب اسم العائلة" />
-<div class="note" id="info">يرجى رفع ملف البيانات</div>
-<br><br>
-<input type="file" id="file" accept=".csv">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">
+        <img src="logo.png" alt="SMOU GROUP">
+      </div>
+      <div class="titleBox">
+        <h1>الكبائن الروزجولد — Rosegold Cabin</h1>
+        <span>SMOU GROUP</span>
+      </div>
+    </div>
+  </div>
 
-<table id="table" style="display:none">
-  <thead></thead>
-  <tbody></tbody>
-</table>
+  <div class="heroText">
+    <h2>معرض كبائن الروزجولد</h2>
+    <p>اسحب يمين أو يسار للتصفح. اضغط فتح لعرض الجولة 360°.</p>
+  </div>
+
+</div>
+</section>
+
+<main>
+<div class="track" id="track"></div>
+</main>
+
+<footer>
+© <span id="year"></span> SMOU GROUP
+</footer>
 
 <script>
-let data=[], headers=[];
-const FAMILY_COL = "العائلة";
+document.getElementById("year").textContent = new Date().getFullYear();
 
-document.getElementById("file").addEventListener("change", async e=>{
-  const text = await e.target.files[0].text();
-  const lines = text.trim().split("\n");
-  headers = lines[0].split(",");
-  data = lines.slice(1).map(l=>{
-    let obj={};
-    l.split(",").forEach((v,i)=>obj[headers[i]]=v);
-    return obj;
-  });
-  document.getElementById("info").innerText="تم تحميل البيانات";
-});
+const items = [
+{img:"R001.png",href:"https://my.3vfang.com/p/share/content.php?m=a3I4MDM5LWl0ZW09NDc5MTA="},
+{img:"R002.png",href:"https://my.3vfang.com/p/share/content.php?m=a3I4MDM5LWl0ZW09NDc5MTE="},
+{img:"R003.png",href:"https://my.3vfang.com/p/share/content.php?m=a3I4MDM5LWl0ZW09NDc5MDI="},
+{img:"R004.png",href:"https://my.3vfang.com/p/share/content.php?m=a3I4MDM5LWl0ZW09NDc5MDM="},
+{img:"R005.png",href:"https://my.3vfang.com/p/share/content.php?m=a3I4MDM5LWl0ZW09NDc5MDQ="},
+{img:"R006.png",href:"https://my.3vfang.com/p/share/content.php?m=a3I4MDM5LWl0ZW09NDc5MDU="},
+{img:"R007.png",href:"https://my.3vfang.com/p/share/content.php?m=a3I4MDM5LWl0ZW09NDc5MDU="},
+{img:"R008.png",href:"https://my.3vfang.com/p/share/content.php?m=bGR5cy1pdGVtPTQyMjAx"},
+{img:"R009.png",href:"https://my.3vfang.com/p/share/content.php?m=bGR5cy1pdGVtPTQyMjA0"},
+{img:"R010.png",href:"https://my.3vfang.com/p/share/content.php?m=a3I4MDM5LWl0ZW09NDU2MzY="},
+{img:"R011.png",href:"https://s.3vfang.com/p/share/scontent.php?m=bGR5cy1pdGVtPTU1Mzg3"},
+{img:"R012.png",href:"https://s.3vfang.com/p/share/scontent.php?m=bGR5cy1pdGVtPTU1Mzg4"},
+{img:"R013.png",href:"https://s.3vfang.com/p/share/scontent.php?m=bGR5cy1pdGVtPTU1Mzg5"},
+{img:"R014.png",href:"https://s.3vfang.com/p/share/scontent.php?m=bGR5cy1pdGVtPTU1Mzkw"},
+{img:"R015.png",href:"https://s.3vfang.com/p/share/scontent.php?m=bGR5cy1pdGVtPTU1Mzky"},
+{img:"R016.png",href:"https://s.3vfang.com/p/share/scontent.php?m=bGR5cy1pdGVtPTU1Mzkz"},
+{img:"R017.png",href:"https://s.3vfang.com/p/share/scontent.php?m=bGR5cy1pdGVtPTU1NDMz"},
+{img:"R018.png",href:"https://s.3vfang.com/p/share/scontent.php?m=MTU5NjI1ODA4MTktaXRlbT01NTAxNA=="}
+];
 
-document.getElementById("search").addEventListener("input",()=>{
-  const q = document.getElementById("search").value.trim();
-  const table = document.getElementById("table");
-  const thead = table.querySelector("thead");
-  const tbody = table.querySelector("tbody");
+const track = document.getElementById("track");
 
-  if(!q){ table.style.display="none"; return; }
-
-  const norm = s => (s||"").toString().trim().replace(/\s+/g," ");
-const res = data.filter(r => norm(r[FAMILY_COL]).includes(norm(q)));
-
-  if(!res.length){
-    document.getElementById("info").innerText="لا توجد نتائج";
-    table.style.display="none";
-    return;
-  }
-
-  thead.innerHTML="<tr>"+headers.map(h=>`<th>${h}</th>`).join("")+"</tr>";
-  tbody.innerHTML=res.map(r=>"<tr>"+headers.map(h=>`<td>${r[h]||""}</td>`).join("")+"</tr>").join("");
-  table.style.display="table";
-  document.getElementById("info").innerText=`عدد النتائج: ${res.length}`;
+items.forEach(it=>{
+  const code = it.img.replace(".png","");
+  const card = document.createElement("div");
+  card.className="card";
+  card.innerHTML=`
+    <div class="thumb">
+      <img src="${it.img}" alt="${code}">
+    </div>
+    <div class="meta">
+      <b>${code}</b>
+      <a class="open" href="${it.href}" target="_blank">فتح</a>
+    </div>
+  `;
+  track.appendChild(card);
 });
 </script>
 
